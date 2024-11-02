@@ -1,99 +1,201 @@
-import tkinter as tk
-from tkinter import Scale, HORIZONTAL
-from PIL import Image, ImageTk
+import pygame
+import sys
+import math
 
-class PixelArtApp:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Pixel Art with Tkinter and Pillow")
+# Константы
+WIDTH, HEIGHT = 1000, 1000
+PIXEL_SIZE = 10
+INITIAL_SCALE = 1
+MAX_SCALE = 5
+MIN_SCALE = 0.1
+DELAY_MS = 1  # Задержка в миллисекундах между шагами
 
-        # Установите начальный размер изображения
-        self.size = 50
-        self.canvas_size = 800
-        self.image = Image.new("RGB", (self.size, self.size), (255, 255, 255))
 
-        self.canvas = tk.Canvas(self.master, width=self.canvas_size, height=self.canvas_size)
-        self.canvas.pack()
+def draw_canvas(screen, scale, pixel_map, offset_x, offset_y):
+    # Заливаем экран белым цветом
+    screen.fill((255, 255, 255))
 
-        # Ползунок для изменения размера изображения
-        self.scale = Scale(self.master, from_=1, to=100, orient=HORIZONTAL, command=self.update_size)
-        self.scale.set(self.size)
-        self.scale.pack()
+    # Рисуем рамки для каждого пикселя
+    for y in range(0, HEIGHT // PIXEL_SIZE):
+        for x in range(0, WIDTH // PIXEL_SIZE):
+            # Увеличиваем размер пикселя по масштабу
+            rect = pygame.Rect((x * PIXEL_SIZE * scale) + offset_x, (y * PIXEL_SIZE * scale) + offset_y,
+                               PIXEL_SIZE * scale, PIXEL_SIZE * scale)
+            pygame.draw.rect(screen, (192, 192, 192), rect, 1)  # Обводим серым цветом с шириной 1
 
-        # Переменные для перемещения
-        self.last_x = None
-        self.last_y = None
+            # Если пиксель активен, заливаем его цветом
+            if pixel_map[y][x] is not None:  # Проверяем, не является ли цвет пустым
+                pygame.draw.rect(screen, pixel_map[y][x], rect)  # Заполнение активных пикселей их цветом
 
-        self.canvas.bind("<Button-1>", self.change_color)
-        self.canvas.bind("<B1-Motion>", self.paint)
-        self.canvas.bind("<Button-3>", self.start_move)
-        self.canvas.bind("<B3-Motion>", self.move_canvas)
+    # Координаты для рисования осей, учитывая масштаб и смещение
+    center_x_pixel = (WIDTH // PIXEL_SIZE) // 2
+    center_y_pixel = (HEIGHT // PIXEL_SIZE) // 2
+    center_x = center_x_pixel * PIXEL_SIZE * scale + offset_x
+    center_y = center_y_pixel * PIXEL_SIZE * scale + offset_y
 
-        self.draw_canvas()
+    # Рисуем оси
+    pygame.draw.line(screen, (0, 0, 0), (0, center_y), (WIDTH, center_y), 2)  # Ось X
+    pygame.draw.line(screen, (0, 0, 0), (center_x, 0), (center_x, HEIGHT), 2)  # Ось Y
 
-    def update_size(self, new_size):
-        new_size = int(new_size)
-        if new_size != self.size:
-            # Создаем новое изображение с новым размером
-            new_image = Image.new("RGB", (new_size, new_size), (255, 255, 255))
 
-            # Копируем старые пиксели в новое изображение
-            min_size = min(self.size, new_size)
-            for x in range(min_size):
-                for y in range(min_size):
-                    old_color = self.image.getpixel((x, y))
-                    new_image.putpixel((x, y), old_color)
+def algorithm_A_round(pixel_map, center, radius, outline_color):
+    # Алгоритм растеризации окружности «А» для рисования контура
+    for x in range(-radius, radius + 1):  # Проходим по x от -R до R
+        y_squared = radius ** 2 - x ** 2  # Вычисляем y^2
+        if y_squared >= 0:  # Убедимся, что под корнем не отрицательное значение
+            y = int(math.sqrt(y_squared))  # Вычисляем y как положительное значение
 
-            self.image = new_image
-            self.size = new_size
-            self.draw_canvas()
+            # Обрабатываем 8 симметричных точек
+            points = [
+                (center[0] + x, center[1] + y),
+                (center[0] + y, center[1] + x),
+                (center[0] - x, center[1] + y),
+                (center[0] - y, center[1] + x),
+                (center[0] + x, center[1] - y),
+                (center[0] + y, center[1] - x),
+                (center[0] - x, center[1] - y),
+                (center[0] - y, center[1] - x)
+            ]
 
-    def draw_canvas(self):
-        self.canvas.delete("all")
-        cell_size = self.canvas_size // self.size
+            for px, py in points:
+                if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
+                    pixel_map[py][px] = outline_color  # Используем цвет контура
+                    yield  # Возвращаем управление, чтобы сделать задержку
+                    pygame.time.delay(DELAY_MS)  # Задержка между точками
 
-        for x in range(self.size):
-            for y in range(self.size):
-                color = self.image.getpixel((x, y))
-                self.canvas.create_rectangle(
-                    x * cell_size,
-                    y * cell_size,
-                    (x + 1) * cell_size,
-                    (y + 1) * cell_size,
-                    fill=self.rgb_to_hex(color),
-                    outline="gray"
-                )
 
-    def change_color(self, event):
-        cell_size = self.canvas_size // self.size
-        x = event.x // cell_size
-        y = event.y // cell_size
-        # Сменяем цвет пикселя на красный (или выбирайте любой другой цвет)
-        self.image.putpixel((x, y), (255, 0, 0))
-        self.draw_canvas()
+def algorithm_B_round(pixel_map, center, radius, outline_color):
+    # Алгоритм растеризации окружности (дуги) «Б» для рисования контура
+    for angle in range(0, 360):  # Изменение угла от 0 до 360 градусов
+        rad = math.radians(angle)  # Преобразование градусов в радианы
+        x = int(center[0] + radius * math.cos(rad))
+        y = int(center[1] + radius * math.sin(rad))
 
-    def paint(self, event):
-        cell_size = self.canvas_size // self.size
-        x = event.x // cell_size
-        y = event.y // cell_size
-        self.image.putpixel((x, y), (255, 0, 0))  # Меняем цвет на красный
-        self.draw_canvas()
+        # Проверяем, не выходит ли точка за границы карты пикселей
+        if 0 <= x < len(pixel_map[0]) and 0 <= y < len(pixel_map):
+            pixel_map[y][x] = outline_color  # Используем цвет контура
+            yield  # Возвращаем управление, чтобы сделать задержку
+            pygame.time.delay(DELAY_MS)  # Задержка между точками
 
-    def start_move(self, event):
-        self.last_x = event.x
-        self.last_y = event.y
 
-    def move_canvas(self, event):
-        dx = event.x - self.last_x
-        dy = event.y - self.last_y
-        self.canvas.move("all", dx, dy)
-        self.last_x = event.x
-        self.last_y = event.y
+def algorithm_B_fill(pixel_map, center, radius, fill_color, outline_color):
+    # Затравка (заливка) круговой области
+    y = 0
+    while y <= radius:
+        # Вычисляем x по формуле окружности
+        x = int(math.sqrt(radius ** 2 - y ** 2))
 
-    def rgb_to_hex(self, rgb):
-        return f'#{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}'
+        # Заполняем пиксели в пределах окружности для данной строки
+        for fill_x in range(center[0] - x, center[0] + x + 1):
+            if 0 <= fill_x < len(pixel_map[0]) and 0 <= center[1] + y < len(pixel_map):
+                if pixel_map[center[1] + y][fill_x] != outline_color:  # Проверка, не перекрашиваем ли контур
+                    pixel_map[center[1] + y][fill_x] = fill_color  # Используем цвет заливки
+            if 0 <= fill_x < len(pixel_map[0]) and 0 <= center[1] - y < len(pixel_map):
+                if pixel_map[center[1] - y][fill_x] != outline_color:  # Проверка, не перекрашиваем ли контур
+                    pixel_map[center[1] - y][fill_x] = fill_color  # Используем цвет заливки
+
+        yield  # Возвращаем управление, чтобы сделать задержку
+        pygame.time.delay(DELAY_MS * 100)  # Задержка между строками
+        y += 1
+
+
+def create_example_pattern(pixel_map, outline_color, fill_color):
+    center_x = len(pixel_map[0]) // 2
+    center_y = len(pixel_map) // 2
+    radius = 50
+
+    # Возвращаем генераторы для отрисовки контура окружности и заливки
+    outline_drawing = algorithm_A_round(pixel_map, (center_x, center_y), radius,
+                                        outline_color)  # Используем algorithm_A_round
+    fill_drawing = algorithm_B_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
+
+    return outline_drawing, fill_drawing, (center_x, center_y, radius)  # Возвращаем генераторы и параметры
+
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    pygame.display.set_caption("Pixel Canvas")
+
+    scale = INITIAL_SCALE
+    offset_x, offset_y = 0, 0
+    dragging = False
+    last_mouse_x, last_mouse_y = 0, 0
+
+    # Инициализируем карту пикселей
+    pixel_map = [[None for _ in range(WIDTH // PIXEL_SIZE)] for _ in range(HEIGHT // PIXEL_SIZE)]
+
+    # Пример с разными цветами для контура и заливки
+    outline_color = (255, 0, 0)  # Красный цвет для контура
+    fill_color = (0, 0, 255)  # Синий цвет для заливки
+
+    # Создаем генераторы для отрисовки контура окружности и заливки
+    circle_drawing, fill_drawing, circle_params = create_example_pattern(pixel_map, outline_color, fill_color)
+    circle_center, radius = circle_params[0:2], circle_params[2]
+
+    circle_drawn = False  # Флаг для отслеживания завершения отрисовки круга
+    filling = False  # Флаг для отслеживания выполнения затравки
+    filling_generator = None  # Генератор для затравки
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+            # Управление масштабированием с помощью колесика мыши
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 3:  # Правая кнопка мыши
+                    dragging = True
+                    last_mouse_x, last_mouse_y = event.pos  # Сохраняем начальную позицию
+                elif event.button == 4:  # Колесо мыши (прокрутка вверх)
+                    # Увеличиваем масштаб с фокусировкой на центр координат
+                    new_scale = min(scale + 0.1, MAX_SCALE)
+                    offset_x -= (WIDTH // 2 - offset_x) * (new_scale / scale - 1)
+                    offset_y -= (HEIGHT // 2 - offset_y) * (new_scale / scale - 1)
+                    scale = new_scale
+                elif event.button == 5:  # Колесо мыши (прокрутка вниз)
+                    # Уменьшаем масштаб с фокусировкой на центр координат
+                    new_scale = max(scale - 0.1, MIN_SCALE)
+                    offset_x -= (WIDTH // 2 - offset_x) * (new_scale / scale - 1)
+                    offset_y -= (HEIGHT // 2 - offset_y) * (new_scale / scale - 1)
+                    scale = new_scale
+
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 3:  # Правая кнопка мыши
+                    dragging = False
+
+            # Перемещение холста при перетаскивании
+            if event.type == pygame.MOUSEMOTION and dragging:
+                mouse_x, mouse_y = event.pos
+                offset_x += mouse_x - last_mouse_x
+                offset_y += mouse_y - last_mouse_y
+                last_mouse_x, last_mouse_y = mouse_x, mouse_y
+
+        # Если есть еще пиксели для отрисовки, отрисовываем их
+        if not circle_drawn:
+            try:
+                next(circle_drawing)
+            except StopIteration:
+                circle_drawn = True  # Устанавливаем флаг, когда отрисовка завершена
+
+        if circle_drawn and not filling:
+            filling = True
+            filling_generator = fill_drawing  # Запускаем затравку
+
+        # Выполняем затравку с задержкой
+        if filling:
+            try:
+                next(filling_generator)
+            except StopIteration:
+                filling = False  # Завершаем затравку
+
+        draw_canvas(screen, scale, pixel_map, offset_x, offset_y)
+        pygame.display.flip()
+
+        # Задержка для замедления отрисовки
+        pygame.time.delay(DELAY_MS)
+
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = PixelArtApp(root)
-    root.mainloop()
+    main()
