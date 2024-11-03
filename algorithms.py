@@ -16,16 +16,36 @@ def timer(func):
     return wrapper
 
 @timer
-def algorithm_reference_round(pixel_map, center, radius, outline_color):
+def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
     time.sleep(0.001)
-    t1 = time.time()
-    # Алгоритм Брезенхема для построения окружности
+
+    # Преобразуем углы в радианы и нормализуем
+    angle_start = math.radians(angle_start % 360)
+    if angle_end == 360:
+        angle_end = 2 * math.pi
+    else:
+        angle_end = math.radians(angle_end % 360)
+
+    def is_within_angle(x, y):
+        """Проверка, находится ли точка (x, y) в пределах заданного углового диапазона."""
+        angle = math.atan2(y, x)
+        if angle < 0:
+            angle += 2 * math.pi
+
+        # Если угол задан как полный круг, разрешаем все точки
+        if angle_start == 0 and angle_end == 2 * math.pi:
+            return True
+
+        if angle_start <= angle_end:
+            return angle_start <= angle <= angle_end
+        else:
+            return angle >= angle_start or angle <= angle_end
+
     x = 0
     y = radius
-    d = 3 - 2 * radius  # Начальное значение d
+    d = 3 - 2 * radius  # Начальное значение для алгоритма Брезенхема
 
     while x <= y:
-        time.sleep(0.001)
         # Обрабатываем 8 симметричных точек
         points = [
             (center[0] + x, center[1] + y),
@@ -38,18 +58,24 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color):
             (center[0] - y, center[1] - x)
         ]
 
+        # Проверяем каждую точку на соответствие угловому диапазону
         for px, py in points:
-            if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
-                pixel_map[py][px] = outline_color  # Используем цвет контура
-                # pygame.time.delay(DELAY_MS)  # Задержка между точками
+            dx, dy = px - center[0], py - center[1]
+            if is_within_angle(dx, dy):
+                if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
+                    if pixel_map[py][px] is not None:
+                        pixel_map[px][py] = tuple(255 - c for c in outline_color)
+                    else:
+                        pixel_map[py][px] = outline_color  # Используем цвет контура
 
+        # Обновляем параметры алгоритма Брезенхема
         x += 1
         if d > 0:
             y -= 1
-            d += 4 * (x - y) + 10  # Если d > 0, уменьшаем y
+            d += 4 * (x - y) + 10
         else:
-            d += 4 * x + 6  # Если d <= 0, не меняем y
-    t2 = time.time()
+            d += 4 * x + 6
+
 
 @timer
 def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color):
@@ -107,15 +133,23 @@ def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color
             # pygame.time.delay(DELAY_MS)
 
 @timer
-def algorithm_A_round(pixel_map, center, radius, outline_color):
+def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
     time.sleep(0.001)
-    # Алгоритм растеризации окружности «А» для рисования контура
-    for x in range(-radius, radius + 1):  # Проходим по x от -R до R
-        y_squared = radius ** 2 - x ** 2  # Вычисляем y^2
-        if y_squared >= 0:  # Убедимся, что под корнем не отрицательное значение
-            y = int(math.sqrt(y_squared))  # Вычисляем y как положительное значение
 
-            # Обрабатываем 8 симметричных точек
+    angle_start = math.radians(angle_start)
+    angle_end = math.radians(angle_end)
+
+    def is_within_angle(x, y):
+        angle = math.atan2(y, x)
+        if angle < 0:
+            angle += 2 * math.pi
+        return angle_start <= angle <= angle_end
+
+    for x in range(-radius, radius + 1):
+        y_squared = radius ** 2 - x ** 2
+        if y_squared >= 0:
+            y = int(math.sqrt(y_squared))
+
             points = [
                 (center[0] + x, center[1] + y),
                 (center[0] + y, center[1] + x),
@@ -128,9 +162,13 @@ def algorithm_A_round(pixel_map, center, radius, outline_color):
             ]
 
             for px, py in points:
-                if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
-                    pixel_map[py][px] = outline_color  # Используем цвет контура
-                    # pygame.time.delay(DELAY_MS)  # Задержка между точками
+                dx, dy = px - center[0], py - center[1]
+                if is_within_angle(dx, dy):
+                    if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
+                        if pixel_map[py][px] is not None:
+                            pixel_map[py][px] = tuple(255 - c for c in outline_color)
+                        else:
+                            pixel_map[py][px] = outline_color  # Используем цвет контура
 
 @timer
 def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
@@ -166,17 +204,20 @@ def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
     # flag1 = False
 
 @timer
-def algorithm_B_round(pixel_map, center, radius, outline_color):
+def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
     time.sleep(0.001)
     # Алгоритм растеризации окружности (дуги) «Б» для рисования контура
-    for angle in range(0, 360):  # Изменение угла от 0 до 360 градусов
+    for angle in range(angle_start, angle_end):  # Изменение угла от 0 до 360 градусов
         rad = math.radians(angle)  # Преобразование градусов в радианы
         x = int(center[0] + radius * math.cos(rad))
         y = int(center[1] + radius * math.sin(rad))
         # pygame.display.flip()
         # Проверяем, не выходит ли точка за границы карты пикселей
         if 0 <= x < len(pixel_map[0]) and 0 <= y < len(pixel_map):
-            pixel_map[y][x] = outline_color  # Используем цвет контура
+            if pixel_map[y][x] is not None:
+                pixel_map[y][x] = tuple(255 - c for c in outline_color)
+            else:
+                pixel_map[y][x] = outline_color  # Используем цвет контура
             # pygame.display.flip()
             # pygame.time.delay(DELAY_MS)  # Задержка между точками
 

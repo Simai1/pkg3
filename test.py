@@ -4,6 +4,7 @@ import math
 from config import *
 from algorithms import *
 
+
 def draw_canvas(screen, scale, pixel_map, offset_x, offset_y):
     # Заливаем экран белым цветом
     screen.fill((230, 230, 230))
@@ -46,16 +47,22 @@ def draw_canvas(screen, scale, pixel_map, offset_x, offset_y):
                          tick_thickness)
 
 
-def create_example_pattern(pixel_map, outline_color, fill_color, algorithm_round, algorithm_fill, _radius,x,y):
-    center_x = len(pixel_map[0]) // 2 + int(x * 20) # 0
-    center_y = len(pixel_map) // 2 - int(y * 20)  # 7.4
-    radius = int(_radius * 20)  # 3
+def create_example_pattern(pixel_map, outline_color, fill_color, algorithm_round, algorithm_fill, _radius, x, y):
+    center_x = len(pixel_map[0]) // 2 + int(x * 20)
+    center_y = len(pixel_map) // 2 - int(y * 20)
+    radius = int(_radius * 20)
 
     # Возвращаем генераторы для отрисовки контура окружности и заливки
     algorithm_round(pixel_map, (center_x, center_y), radius,
-                                        outline_color)  # Используем reference_algorithm_round
-    algorithm_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
+                    outline_color)  # Используем reference_algorithm_round
+    # algorithm_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
 
+
+def create_arc_pattern(pixel_map, outline_color, algorithm_round, _radius, x, y, ara, arb):
+    center_x = len(pixel_map[0]) // 2 + int(x * 20)
+    center_y = len(pixel_map) // 2 - int(y * 20)
+    radius = int(_radius * 20)  # 3
+    algorithm_round(pixel_map, (center_x, center_y), radius, outline_color, ara, arb)
 
 
 def main():
@@ -107,24 +114,29 @@ def main():
                 offset_y += mouse_y - last_mouse_y
                 last_mouse_x, last_mouse_y = mouse_x, mouse_y
 
-
         draw_canvas(screen, scale, pixel_map, offset_x, offset_y)
         if (f):
-            ar = algorithm_B_round
-            af = algorithm_B_fill
-            create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af, 1, 2, 14)  # Окружность 1
-            create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 1.15, 2, 12.8)  # Окружность 2
-            create_example_pattern(pixel_map, (255, 140, 0), (255, 140, 0), ar, af, 2, 0, 14)  # Окружность 3
-            create_example_pattern(pixel_map, (255, 140, 0), (255, 140, 0), ar, af, 2, 3, 10.5)  # Окружность 4
-            create_example_pattern(pixel_map, (255, 140, 0), (255, 140, 0), ar, af, 1.5, -1, 10)  # Окружность 5
-            create_example_pattern(pixel_map, (0, 255, 0), (0, 255, 0), ar, af, 3, 3, 7)  # Окружность 6
-            create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 3, 1.5, 6.6)  # Окружность 7
-            create_example_pattern(pixel_map, (255, 255, 0), (255, 255, 0), ar, af, 3, 2, 7.1)  # Окружность 8
-            create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 3, 0.7, 6.8)  # Окружность 9
-            create_example_pattern(pixel_map, (0, 0, 255), (0, 0, 255), ar, af, 3, 1.3, 7.5)  # Окружность 10
-            create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 3, 0, 7.4)  # Окружность 11
-            create_example_pattern(pixel_map, (255, 255, 0), (255, 255, 0), ar, af, 1.5, 0.5, 14)  # Окружность 12
-            create_example_pattern(pixel_map, (0, 0, 0), (0, 0, 0), ar, af, 0.2, 1, 14.5)  # Окружность 13
+            # ar = algorithm_reference_round
+            # af = algorithm_A_fill
+            ar1, ar2, ar3 = algorithm_reference_round, algorithm_A_round, algorithm_B_round
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 3, 0, 0, 0, 270)
+            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 3, 0, 0, 40, 270)
+            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 3, 0, 0, 40, 270)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 5, 0, 0, 0, 270)
+            # create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af, 3, 0, 0)
+            # create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af, 1, 2, 14)  # Окружность 1
+            # create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 1.15, 2, 12.8)  # Окружность 2
+            # create_example_pattern(pixel_map, (255, 140, 0), (255, 140, 0), ar, af, 2, 0, 14)  # Окружность 3
+            # create_example_pattern(pixel_map, (255, 140, 0), (255, 140, 0), ar, af, 2, 3, 10.5)  # Окружность 4
+            # create_example_pattern(pixel_map, (255, 140, 0), (255, 140, 0), ar, af, 1.5, -1, 10)  # Окружность 5
+            # create_example_pattern(pixel_map, (0, 255, 0), (0, 255, 0), ar, af, 3, 3, 7)  # Окружность 6
+            # create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 3, 1.5, 6.6)  # Окружность 7
+            # create_example_pattern(pixel_map, (255, 255, 0), (255, 255, 0), ar, af, 3, 2, 7.1)  # Окружность 8
+            # create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 3, 0.7, 6.8)  # Окружность 9
+            # create_example_pattern(pixel_map, (0, 0, 255), (0, 0, 255), ar, af, 3, 1.3, 7.5)  # Окружность 10
+            # create_example_pattern(pixel_map, (255, 255, 255), (255, 255, 255), ar, af, 3, 0, 7.4)  # Окружность 11
+            # create_example_pattern(pixel_map, (255, 255, 0), (255, 255, 0), ar, af, 1.5, 0.5, 14)  # Окружность 12
+            # create_example_pattern(pixel_map, (0, 0, 0), (0, 0, 0), ar, af, 0.2, 1, 14.5)  # Окружность 13
             f = False
 
         pygame.display.flip()
