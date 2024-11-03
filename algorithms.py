@@ -283,3 +283,32 @@ def algorithm_B_fill(pixel_map, center, radius, fill_color, outline_color):
         # pygame.time.delay(DELAY_MS * 50)
     print(f'S_B = {counter}')
     return pixel_map
+
+def draw_rectangle(pixel_map, center, width, height, outline_color):
+    # Определяем границы прямоугольника
+    left = center[0] - width // 2
+    right = center[0] + width // 2
+    top = center[1] - height // 2
+    bottom = center[1] + height // 2
+
+    # Рисуем верхнюю и нижнюю границы
+    for x in range(left, right + 1):
+        # Верхняя граница
+        if 0 <= x < len(pixel_map[0]) and 0 <= top < len(pixel_map):
+            pixel_map[top][x] = outline_color
+
+        # Нижняя граница
+        if 0 <= x < len(pixel_map[0]) and 0 <= bottom < len(pixel_map):
+            pixel_map[bottom][x] = outline_color
+
+    # Рисуем левую и правую границы
+    for y in range(top, bottom + 1):
+        # Левая граница
+        if 0 <= left < len(pixel_map[0]) and 0 <= y < len(pixel_map):
+            pixel_map[y][left] = outline_color
+
+        # Правая граница
+        if 0 <= right < len(pixel_map[0]) and 0 <= y < len(pixel_map):
+            pixel_map[y][right] = outline_color
+
+    return pixel_map

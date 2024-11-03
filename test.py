@@ -72,6 +72,16 @@ def create_example_pattern(pixel_map, outline_color, fill_color, algorithm_round
                     outline_color)  # Используем reference_algorithm_round
     algorithm_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
 
+def create_field_4fill(pixel_map, outline_color, fill_color, width, height, algorithm_fill, x, y):
+    center_x = len(pixel_map[0]) // 2 + int(x * 20)
+    center_y = len(pixel_map) // 2 - int(y * 20)
+    width = int(width * 20)
+    height = int(height * 20)
+    radius = int(min(width, height) // 2 - 1)
+    print(radius)
+    # radius = 1
+    draw_rectangle(pixel_map, (center_x, center_y), width, height, outline_color)
+    algorithm_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
 
 def create_arc_pattern(pixel_map, outline_color, algorithm_round, _radius, x, y, ara, arb):
     # print(f"Длина дуги: {arc_length(_radius, ara, arb)}")
@@ -135,7 +145,11 @@ def main():
             ar = algorithm_A_round
             af1, af2, af3 = algorithm_reference_fill, algorithm_A_fill, algorithm_B_fill
 
-            # create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af1, 1, 0, 0)
+            # create_field_4fill(pixel_map, (255, 0, 0), (0, 255, 0), 2.75, 9.25, af1, 0, 0)
+            # create_field_4fill(pixel_map, (255, 0, 0), (0, 255, 0), 2.75, 9.25, af2, 0, 0)
+            # create_field_4fill(pixel_map, (255, 0, 0), (0, 255, 0), 2.75, 9.25, af3, 0, 0)
+
+            # create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af3, 1, 0, 0)
             # create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af2, 1, 2, 2)
             # create_example_pattern(pixel_map, (255, 140, 0), (255, 141, 0), ar, af3, 1, 4, 4)
 
