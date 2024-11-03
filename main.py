@@ -1,27 +1,20 @@
 import pygame
 import sys
 import math
-
-# Константы
-WIDTH, HEIGHT = 1000, 1000
-PIXEL_SIZE = 10
-INITIAL_SCALE = 1
-MAX_SCALE = 5
-MIN_SCALE = 0.1
-DELAY_MS = 1  # Задержка в миллисекундах между шагами
-
+from config import *
+from algorithms import *
 
 def draw_canvas(screen, scale, pixel_map, offset_x, offset_y):
     # Заливаем экран белым цветом
-    screen.fill((255, 255, 255))
-
+    screen.fill((230, 230, 230))
     # Рисуем рамки для каждого пикселя
     for y in range(0, HEIGHT // PIXEL_SIZE):
         for x in range(0, WIDTH // PIXEL_SIZE):
             # Увеличиваем размер пикселя по масштабу
             rect = pygame.Rect((x * PIXEL_SIZE * scale) + offset_x, (y * PIXEL_SIZE * scale) + offset_y,
                                PIXEL_SIZE * scale, PIXEL_SIZE * scale)
-            pygame.draw.rect(screen, (192, 192, 192), rect, 1)  # Обводим серым цветом с шириной 1
+            if scale >= 3:
+                pygame.draw.rect(screen, (192, 192, 192), rect, 1)  # Обводим серым цветом с шириной 1
 
             # Если пиксель активен, заливаем его цветом
             if pixel_map[y][x] is not None:  # Проверяем, не является ли цвет пустым
@@ -37,77 +30,31 @@ def draw_canvas(screen, scale, pixel_map, offset_x, offset_y):
     pygame.draw.line(screen, (0, 0, 0), (0, center_y), (WIDTH, center_y), 2)  # Ось X
     pygame.draw.line(screen, (0, 0, 0), (center_x, 0), (center_x, HEIGHT), 2)  # Ось Y
 
+    # Рисуем засечки на каждой 20-й ячейке
+    tick_length = 7 * scale  # Увеличенная длина засечки для лучшей видимости
+    tick_thickness = 2  # Толщина засечки
+    for i in range(0, WIDTH // PIXEL_SIZE, 20):
+        # Засечки по оси X
+        tick_x = i * PIXEL_SIZE * scale + offset_x
+        pygame.draw.line(screen, (0, 0, 0), (tick_x, center_y - tick_length), (tick_x, center_y + tick_length),
+                         tick_thickness)
 
-def algorithm_A_round(pixel_map, center, radius, outline_color):
-    # Алгоритм растеризации окружности «А» для рисования контура
-    for x in range(-radius, radius + 1):  # Проходим по x от -R до R
-        y_squared = radius ** 2 - x ** 2  # Вычисляем y^2
-        if y_squared >= 0:  # Убедимся, что под корнем не отрицательное значение
-            y = int(math.sqrt(y_squared))  # Вычисляем y как положительное значение
-
-            # Обрабатываем 8 симметричных точек
-            points = [
-                (center[0] + x, center[1] + y),
-                (center[0] + y, center[1] + x),
-                (center[0] - x, center[1] + y),
-                (center[0] - y, center[1] + x),
-                (center[0] + x, center[1] - y),
-                (center[0] + y, center[1] - x),
-                (center[0] - x, center[1] - y),
-                (center[0] - y, center[1] - x)
-            ]
-
-            for px, py in points:
-                if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
-                    pixel_map[py][px] = outline_color  # Используем цвет контура
-                    yield  # Возвращаем управление, чтобы сделать задержку
-                    pygame.time.delay(DELAY_MS)  # Задержка между точками
+    for i in range(0, HEIGHT // PIXEL_SIZE, 20):
+        # Засечки по оси Y
+        tick_y = i * PIXEL_SIZE * scale + offset_y
+        pygame.draw.line(screen, (0, 0, 0), (center_x - tick_length, tick_y), (center_x + tick_length, tick_y),
+                         tick_thickness)
 
 
-def algorithm_B_round(pixel_map, center, radius, outline_color):
-    # Алгоритм растеризации окружности (дуги) «Б» для рисования контура
-    for angle in range(0, 360):  # Изменение угла от 0 до 360 градусов
-        rad = math.radians(angle)  # Преобразование градусов в радианы
-        x = int(center[0] + radius * math.cos(rad))
-        y = int(center[1] + radius * math.sin(rad))
-
-        # Проверяем, не выходит ли точка за границы карты пикселей
-        if 0 <= x < len(pixel_map[0]) and 0 <= y < len(pixel_map):
-            pixel_map[y][x] = outline_color  # Используем цвет контура
-            yield  # Возвращаем управление, чтобы сделать задержку
-            pygame.time.delay(DELAY_MS)  # Задержка между точками
-
-
-def algorithm_B_fill(pixel_map, center, radius, fill_color, outline_color):
-    # Затравка (заливка) круговой области
-    y = 0
-    while y <= radius:
-        # Вычисляем x по формуле окружности
-        x = int(math.sqrt(radius ** 2 - y ** 2))
-
-        # Заполняем пиксели в пределах окружности для данной строки
-        for fill_x in range(center[0] - x, center[0] + x + 1):
-            if 0 <= fill_x < len(pixel_map[0]) and 0 <= center[1] + y < len(pixel_map):
-                if pixel_map[center[1] + y][fill_x] != outline_color:  # Проверка, не перекрашиваем ли контур
-                    pixel_map[center[1] + y][fill_x] = fill_color  # Используем цвет заливки
-            if 0 <= fill_x < len(pixel_map[0]) and 0 <= center[1] - y < len(pixel_map):
-                if pixel_map[center[1] - y][fill_x] != outline_color:  # Проверка, не перекрашиваем ли контур
-                    pixel_map[center[1] - y][fill_x] = fill_color  # Используем цвет заливки
-
-        yield  # Возвращаем управление, чтобы сделать задержку
-        pygame.time.delay(DELAY_MS * 100)  # Задержка между строками
-        y += 1
-
-
-def create_example_pattern(pixel_map, outline_color, fill_color):
-    center_x = len(pixel_map[0]) // 2
-    center_y = len(pixel_map) // 2
-    radius = 50
+def create_example_pattern(pixel_map, outline_color, fill_color, ):
+    center_x = len(pixel_map[0]) // 2 + 40  # 2
+    center_y = len(pixel_map) // 2 - 280  # 14
+    radius = 23  # 1.15
 
     # Возвращаем генераторы для отрисовки контура окружности и заливки
-    outline_drawing = algorithm_A_round(pixel_map, (center_x, center_y), radius,
-                                        outline_color)  # Используем algorithm_A_round
-    fill_drawing = algorithm_B_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
+    outline_drawing = algorithm_B_round(pixel_map, (center_x, center_y), radius,
+                                        outline_color)  # Используем reference_algorithm_round
+    fill_drawing = algorithm_reference_fill(pixel_map, (center_x, center_y), radius, fill_color, outline_color)
 
     return outline_drawing, fill_drawing, (center_x, center_y, radius)  # Возвращаем генераторы и параметры
 
@@ -181,7 +128,7 @@ def main():
 
         if circle_drawn and not filling:
             filling = True
-            filling_generator = fill_drawing  # Запускаем затравку
+            filling_generator = fill_drawing  # Запускаем затравку2
 
         # Выполняем затравку с задержкой
         if filling:
