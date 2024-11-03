@@ -1,23 +1,22 @@
 import math
 import time
-
+import timeit
 import pygame
 
 from config import *
 
 def timer(func):
     def wrapper(*args, **kwargs):
-        start_time = time.time()  # Запоминаем время начала выполнения
+        start_time = timeit.default_timer()  # Запоминаем время начала выполнения
         result = func(*args, **kwargs)  # Вызываем переданную функцию
-        end_time = time.time()  # Запоминаем время окончания выполнения
-        execution_time = end_time - start_time  # Вычисляем время выполнения
+        end_time = timeit.default_timer()  # Запоминаем время окончания выполнения
+        execution_time = end_time - start_time # Вычисляем время выполнения
         print(f'Время выполнения функции {func.__name__}: {execution_time:.6f} секунд')
         return result  # Возвращаем результат вызова функции
     return wrapper
 
 @timer
 def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
-    time.sleep(0.001)
     counter = 0
     counter_on = 0
 
@@ -66,7 +65,7 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
             if is_within_angle(dx, dy):
                 if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
                     if pixel_map[py][px] is not None:
-                        pixel_map[px][py] = tuple(255 - c for c in outline_color)
+                        pixel_map[py][px] = tuple(255 - c for c in outline_color)
                     else:
                         counter_on += 1
                         pixel_map[py][px] = outline_color  # Используем цвет контура
@@ -79,12 +78,14 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
             d += 4 * (x - y) + 10
         else:
             d += 4 * x + 6
+
+    # Выводим информацию о нарисованных пикселях
     print(f"{counter}/{counter_on} ({round((counter_on / counter) * 100, 2)})")
+    return pixel_map
 
 
 @timer
 def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color):
-    time.sleep(0.001)
     # global flag1
     x = center[1]
     y = center[0]
@@ -136,10 +137,10 @@ def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color
                 stack.append((x, y - 1))  # Вверх
 
             # pygame.time.delay(DELAY_MS)
+    return pixel_map
 
 @timer
 def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
-    time.sleep(0.001)
 
     angle_start = math.radians(angle_start)
     angle_end = math.radians(angle_end)
@@ -174,10 +175,10 @@ def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, a
                             pixel_map[py][px] = tuple(255 - c for c in outline_color)
                         else:
                             pixel_map[py][px] = outline_color  # Используем цвет контура
+    return pixel_map
 
 @timer
 def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
-    time.sleep(0.001)
     # global flag1
     x = center[1]
     y = center[0]
@@ -207,10 +208,10 @@ def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
                 # pygame.display.flip()
                 # pygame.time.delay(DELAY_MS)
     # flag1 = False
+    return pixel_map
 
 @timer
 def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
-    time.sleep(0.001)
     # Алгоритм растеризации окружности (дуги) «Б» для рисования контура
     for angle in range(angle_start, angle_end):  # Изменение угла от 0 до 360 градусов
         rad = math.radians(angle)  # Преобразование градусов в радианы
@@ -219,16 +220,16 @@ def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, a
         # pygame.display.flip()
         # Проверяем, не выходит ли точка за границы карты пикселей
         if 0 <= x < len(pixel_map[0]) and 0 <= y < len(pixel_map):
-            if pixel_map[y][x] is not None:
-                pixel_map[y][x] = tuple(255 - c for c in outline_color)
-            else:
-                pixel_map[y][x] = outline_color  # Используем цвет контура
+            # if pixel_map[y][x] is not None:
+            #     pixel_map[y][x] = tuple(255 - c for c in outline_color)
+            # else:
+            pixel_map[y][x] = outline_color  # Используем цвет контура
             # pygame.display.flip()
             # pygame.time.delay(DELAY_MS)  # Задержка между точками
+    return pixel_map
 
 @timer
 def algorithm_B_fill(pixel_map, center, radius, fill_color, outline_color):
-    time.sleep(0.001)
     # Заливка круговой области построчно, начиная от центра строки
     for y in range(-radius, radius + 1):
         # Вычисляем максимальное смещение по x для текущей строки y
@@ -252,3 +253,4 @@ def algorithm_B_fill(pixel_map, center, radius, fill_color, outline_color):
         #         pygame.display.flip()
         # pygame.display.flip()
         # pygame.time.delay(DELAY_MS * 50)
+    return pixel_map
