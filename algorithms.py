@@ -140,7 +140,7 @@ def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color
     return pixel_map
 
 @timer
-def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
+def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
 
     angle_start = math.radians(angle_start)
     angle_end = math.radians(angle_end)
@@ -211,7 +211,7 @@ def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
     return pixel_map
 
 @timer
-def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
+def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
     # Алгоритм растеризации окружности (дуги) «Б» для рисования контура
     for angle in range(angle_start, angle_end):  # Изменение угла от 0 до 360 градусов
         rad = math.radians(angle)  # Преобразование градусов в радианы
