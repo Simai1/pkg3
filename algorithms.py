@@ -16,10 +16,7 @@ def timer(func):
     return wrapper
 
 @timer
-def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
-    counter = 0
-    counter_on = 0
-
+def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360, dash_length=8, gap_length=7):
     # Преобразуем углы в радианы и нормализуем
     angle_start = math.radians(angle_start % 360)
     if angle_end == 360:
@@ -45,6 +42,8 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
     x = 0
     y = radius
     d = 3 - 2 * radius  # Начальное значение для алгоритма Брезенхема
+    dash_count = 0  # Счётчик для определения текущего сегмента (штрих или пробел)
+    drawing_dash = True  # Флаг, указывающий, рисуем ли сейчас штрих
 
     while x <= y:
         # Обрабатываем 8 симметричных точек
@@ -59,17 +58,24 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
             (center[0] - y, center[1] - x)
         ]
 
-        # Проверяем каждую точку на соответствие угловому диапазону
+        # Проверяем каждую точку на соответствие угловому диапазону и пунктирный стиль
         for px, py in points:
             dx, dy = px - center[0], py - center[1]
             if is_within_angle(dx, dy):
-                if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
+                if drawing_dash and 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
                     if pixel_map[py][px] is not None:
                         pixel_map[py][px] = tuple(255 - c for c in outline_color)
                     else:
-                        counter_on += 1
-                        pixel_map[py][px] = outline_color  # Используем цвет контура
-                    counter += 1
+                        pixel_map[py][px] = outline_color
+
+        # Обновляем параметры пунктирного стиля
+        dash_count += 1
+        if drawing_dash and dash_count >= dash_length:
+            drawing_dash = False
+            dash_count = 0
+        elif not drawing_dash and dash_count >= gap_length:
+            drawing_dash = True
+            dash_count = 0
 
         # Обновляем параметры алгоритма Брезенхема
         x += 1
@@ -79,8 +85,6 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
         else:
             d += 4 * x + 6
 
-    # Выводим информацию о нарисованных пикселях
-    print(f"{counter}/{counter_on} ({round((counter_on / counter) * 100, 2)})")
     return pixel_map
 
 

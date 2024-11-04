@@ -135,31 +135,31 @@ def main():
             # ar = algorithm_reference_round
             # af = algorithm_A_fill
             ar1, ar2, ar3 = algorithm_reference_round, algorithm_A_round, algorithm_B_round
-            ara, arb = 150, 210
+            ara, arb = 0, 360
 
             create_arc_pattern(pixel_map, (255, 140, 0), ar1, 1, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 2, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 3, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 4, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 5, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 6, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 7, 0, 0, ara, arb)
-
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 1, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 2, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 3, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 4, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 5, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 6, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 7, 0, 0, ara, arb)
-
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 1, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 2, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 3, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 4, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 5, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 6, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 7, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 2, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 3, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 4, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 5, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 6, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 7, 0, 0, ara, arb)
+            #
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 1, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 2, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 3, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 4, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 5, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 6, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar2, 7, 0, 0, ara, arb)
+            #
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 1, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 2, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 3, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 4, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 5, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 6, 0, 0, ara, arb)
+            # create_arc_pattern(pixel_map, (255, 140, 0), ar3, 7, 0, 0, ara, arb)
 
             # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 2, 0, 0, 0, 180)
             # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 3, 0, 0, 0, 180)
