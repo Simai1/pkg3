@@ -5,15 +5,18 @@ import pygame
 
 from config import *
 
+
 def timer(func):
     def wrapper(*args, **kwargs):
         start_time = timeit.default_timer()  # Запоминаем время начала выполнения
         result = func(*args, **kwargs)  # Вызываем переданную функцию
         end_time = timeit.default_timer()  # Запоминаем время окончания выполнения
-        execution_time = end_time - start_time # Вычисляем время выполнения
+        execution_time = end_time - start_time  # Вычисляем время выполнения
         print(f'Время выполнения функции {func.__name__}: {execution_time:.6f} секунд')
         return result  # Возвращаем результат вызова функции
+
     return wrapper
+
 
 @timer
 def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
@@ -84,12 +87,6 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
     return pixel_map
 
 
-import math
-
-
-import math
-
-
 def algorithm_reference_fill_double_outline(pixel_map, center, radius, outline_color, new_color, gap=5,
                                             space_color=None):
     x_center, y_center = center
@@ -119,16 +116,15 @@ def algorithm_reference_fill_double_outline(pixel_map, center, radius, outline_c
             pixel_map[x_inner][y_inner] = new_color
 
         # Проверяем на промежуток
-        if space_color is not None:
-            # Находим промежуток между контурами
-            for gap_angle in range(1, gap):  # Пиксели между внутренним и внешним контурами
-                x_gap = int(x_center + (inner_radius + gap_angle) * math.cos(rad))
-                y_gap = int(y_center + (inner_radius + gap_angle) * math.sin(rad))
-
-                if 0 <= x_gap < WIDTH and 0 <= y_gap < HEIGHT:
-                    pixel_map[x_gap][y_gap] = space_color  # Устанавливаем цвет промежутка
+        # if space_color is not None:
+        #     # Находим промежуток между контурами
+        #     for gap_angle in range(1, gap):  # Пиксели между внутренним и внешним контурами
+        #         x_gap = int(x_center + (inner_radius + gap_angle) * math.cos(rad))
+        #         y_gap = int(y_center + (inner_radius + gap_angle) * math.sin(rad))
+        #
+        #         if 0 <= x_gap < WIDTH and 0 <= y_gap < HEIGHT:
+        #             pixel_map[x_gap][y_gap] = space_color  # Устанавливаем цвет промежутка
         yield
-
 
 
 @timer
@@ -186,9 +182,9 @@ def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color
             # pygame.time.delay(DELAY_MS)
     return pixel_map
 
+
 @timer
 def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
-
     angle_start = math.radians(angle_start)
     angle_end = math.radians(angle_end)
 
@@ -224,6 +220,7 @@ def algorithm_A_round(pixel_map, center, radius, outline_color, angle_start=0, a
                             pixel_map[py][px] = outline_color  # Используем цвет контура
     return pixel_map
 
+
 @timer
 def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
     # global flag1
@@ -257,6 +254,7 @@ def algorithm_A_fill(pixel_map, center, radius, new_color, outline_color):
     # flag1 = False
     return pixel_map
 
+
 @timer
 def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=180):
     # Алгоритм растеризации окружности (дуги) «Б» для рисования контура
@@ -274,6 +272,7 @@ def algorithm_B_round(pixel_map, center, radius, outline_color, angle_start=0, a
             # pygame.display.flip()
             # pygame.time.delay(DELAY_MS)  # Задержка между точками
     return pixel_map
+
 
 @timer
 def algorithm_B_fill(pixel_map, center, radius, fill_color, outline_color):
