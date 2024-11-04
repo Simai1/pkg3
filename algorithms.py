@@ -17,8 +17,6 @@ def timer(func):
 
 @timer
 def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_start=0, angle_end=360):
-    counter = 0
-    counter_on = 0
 
     # Преобразуем углы в радианы и нормализуем
     angle_start = math.radians(angle_start % 360)
@@ -64,12 +62,7 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
             dx, dy = px - center[0], py - center[1]
             if is_within_angle(dx, dy):
                 if 0 <= px < len(pixel_map[0]) and 0 <= py < len(pixel_map):
-                    if pixel_map[py][px] is not None:
-                        pixel_map[py][px] = tuple(255 - c for c in outline_color)
-                    else:
-                        counter_on += 1
-                        pixel_map[py][px] = outline_color  # Используем цвет контура
-                    counter += 1
+                    pixel_map[py][px] = outline_color  # Используем цвет контура
 
         # Обновляем параметры алгоритма Брезенхема
         x += 1
@@ -78,10 +71,6 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
             d += 4 * (x - y) + 10
         else:
             d += 4 * x + 6
-
-    # Выводим информацию о нарисованных пикселях
-    print(f"{counter}/{counter_on} ({round((counter_on / counter) * 100, 2)})")
-    return pixel_map
 
 
 @timer
