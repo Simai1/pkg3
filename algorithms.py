@@ -84,6 +84,53 @@ def algorithm_reference_round(pixel_map, center, radius, outline_color, angle_st
     return pixel_map
 
 
+import math
+
+
+import math
+
+
+def algorithm_reference_fill_double_outline(pixel_map, center, radius, outline_color, new_color, gap=5,
+                                            space_color=None):
+    x_center, y_center = center
+
+    # Устанавливаем размеры для промежутка между контурами
+    outer_radius = radius
+    inner_radius = radius - gap  # Промежуток между контурами
+
+    # Рисуем двойной контур по уравнению окружности
+    for angle in range(360):  # Проходим по углам от 0 до 359 градусов
+        rad = math.radians(angle)  # Преобразуем градусы в радианы
+
+        # Вычисляем координаты для внешнего контура
+        x_outer = int(x_center + outer_radius * math.cos(rad))
+        y_outer = int(y_center + outer_radius * math.sin(rad))
+
+        # Устанавливаем цвет внешнего контура, если в пределах границ pixel_map
+        if 0 <= x_outer < WIDTH and 0 <= y_outer < HEIGHT:
+            pixel_map[x_outer][y_outer] = outline_color
+
+        # Вычисляем координаты для внутреннего контура
+        x_inner = int(x_center + inner_radius * math.cos(rad))
+        y_inner = int(y_center + inner_radius * math.sin(rad))
+
+        # Устанавливаем цвет внутреннего контура, если в пределах границ pixel_map
+        if 0 <= x_inner < WIDTH and 0 <= y_inner < HEIGHT:
+            pixel_map[x_inner][y_inner] = new_color
+
+        # Проверяем на промежуток
+        if space_color is not None:
+            # Находим промежуток между контурами
+            for gap_angle in range(1, gap):  # Пиксели между внутренним и внешним контурами
+                x_gap = int(x_center + (inner_radius + gap_angle) * math.cos(rad))
+                y_gap = int(y_center + (inner_radius + gap_angle) * math.sin(rad))
+
+                if 0 <= x_gap < WIDTH and 0 <= y_gap < HEIGHT:
+                    pixel_map[x_gap][y_gap] = space_color  # Устанавливаем цвет промежутка
+        yield
+
+
+
 @timer
 def algorithm_reference_fill(pixel_map, center, radius, new_color, outline_color):
     # global flag1

@@ -80,6 +80,12 @@ def create_arc_pattern(pixel_map, outline_color, algorithm_round, _radius, x, y,
     radius = int(_radius * 20)  # 3
     algorithm_round(pixel_map, (center_x, center_y), radius, outline_color, ara, arb)
 
+def create_double_circle(pixel_map, outline_color, new_color, _radius, x, y, ):
+    center_x = len(pixel_map[0]) // 2 + int(x * 20)
+    center_y = len(pixel_map) // 2 - int(y * 20)
+    radius = int(_radius * 20)
+
+    return algorithm_reference_fill_double_outline(pixel_map, (center_x, center_y), radius, new_color,outline_color)
 
 def main():
     pygame.init()
@@ -137,30 +143,7 @@ def main():
             ar1, ar2, ar3 = algorithm_reference_round, algorithm_A_round, algorithm_B_round
             ara, arb = 150, 210
 
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 1, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 2, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 3, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 4, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 5, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 6, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar1, 7, 0, 0, ara, arb)
-
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 1, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 2, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 3, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 4, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 5, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 6, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar2, 7, 0, 0, ara, arb)
-
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 1, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 2, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 3, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 4, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 5, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 6, 0, 0, ara, arb)
-            create_arc_pattern(pixel_map, (255, 140, 0), ar3, 7, 0, 0, ara, arb)
-
+            gen = create_double_circle(pixel_map,(255, 0, 0), (0, 0, 255), 2, 0, 0)
             # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 2, 0, 0, 0, 180)
             # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 3, 0, 0, 0, 180)
             # create_arc_pattern(pixel_map, (255, 140, 0), ar1, 4, 0, 0, 0, 180)
@@ -186,7 +169,11 @@ def main():
             # create_example_pattern(pixel_map, (255, 255, 0), (255, 255, 0), ar, af, 1.5, 0.5, 14)  # Окружность 12
             # create_example_pattern(pixel_map, (0, 0, 0), (0, 0, 0), ar, af, 0.2, 1, 14.5)  # Окружность 13
             f = False
-
+        if not f:
+            try:
+                next(gen)
+            except StopIteration:
+                pass
         pygame.display.flip()
 
         # Задержка для замедления отрисовки
